@@ -35,8 +35,9 @@ ExamStateChoice = [
 
 
 class Exam(models.Model):
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+    date = models.DateField()
+    start_at = models.TimeField()
+    end_at = models.TimeField()
     room_number = models.IntegerField()
     state = models.CharField(choices=ExamStateChoice, max_length=25)
 

@@ -1,7 +1,7 @@
 from django.urls import path
 
-from core.views import test_view
+from core.views import FetchExams
 
 urlpatterns = [
-    path('', test_view),
+    path('', FetchExams.as_view({'get': 'post'})),
 ]
