@@ -39,7 +39,7 @@ class Exam(models.Model):
     start_at = models.TimeField()
     end_at = models.TimeField()
     room_number = models.IntegerField()
-    state = models.CharField(choices=ExamStateChoice, max_length=25)
+    state = models.CharField(choices=ExamStateChoice, max_length=25, default=ExamStateChoice[0][0])
 
     def verify_from_professor(self):
         if self.state != 'prof_waited':
@@ -66,7 +66,8 @@ ExamListItemChoices = [
 class ExamListItem(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='items')
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    state = models.CharField(choices=ExamListItemChoices, max_length=32)
+    state = models.CharField(choices=ExamListItemChoices, max_length=32,
+                             default=ExamListItemChoices[0][0])
 
     def unset_state(self):
         self.state = 'unspecified'
