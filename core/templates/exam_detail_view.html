@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>{{ exam.course.name }} </h1>
+<h2>{{ exam.course.professor.first_name }}
+    {{ exam.course.professor.last_name }} </h2>
+<h2>{{ exam.state }} </h2>
+<h2>is send?: {{ exam.is_sent_to_shit }} </h2>
+<h3>{{ exam.date }} </h3>
+{% for item in exam.items.all %}
+    <p>
+        <a href="{% url 'exam-item-update' item.pk %}">
+            {{ item.student.id }}
+            {{ item.student.first_name }}
+            {{ item.student.last_name }} - {{ item.state }} </a></p>
+{% endfor %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button>Save</button>
+</form>
+
+<form method="post" action="{% url 'verify-exam' exam.pk %}">
+    {% csrf_token %}
+
+    <button>Verify</button>
+</form>
+</body>
+</html>

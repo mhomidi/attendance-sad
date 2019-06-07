@@ -3,12 +3,15 @@ from typing import Dict, List
 
 import requests
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.views.generic import ListView, DetailView, UpdateView
+from requests import status_codes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from core.models import Exam
+from core.models import Exam, ExamListItem
 from core.serializers import ExamSerializer
 
 
@@ -72,22 +75,46 @@ class FetchExams(ViewSet):
 
     def post(self, request):
         data = requests.get(settings.EXAM_LIST_URL).json()
-        result = []
         for exam in data['classes']:
             classified_data = self._get_classified_data(exam, data['date'])
             serializer = ExamSerializer(data=classified_data)
             serializer.is_valid(raise_exception=True)
-            result.append(serializer.save())
-        return Response(ExamSerializer(result, many=True).data)
+            serializer.save()
+        return redirect('exams-list')
+
+
+class ExamListView(ListView):
+    model = Exam
+    template_name = 'exam_list_view.html'
+
+
+class ExamDetailView(UpdateView):
+    model = Exam
+    template_name = 'exam_detail_view.html'
+    fields = ['state']
+
+    def get_success_url(self):
+        return reverse('exam-detail', kwargs={'pk': self.object.id})
+
+
+class ExamListItemUpdateView(UpdateView):
+    model = ExamListItem
+    template_name = 'exam_list_item_update_view.html'
+    fields = ['state']
+
+    def get_success_url(self):
+        return reverse('exam-detail', kwargs={'pk': self.object.exam_id})
 
 
 class VerifyExamView(ViewSet):
     def post(self, request, pk):
         exam = get_object_or_404(Exam, pk=pk)
+        exam.is_sent_to_shit = True
+        exam.save()
         body = {
             'exam_id': exam.pk,
             'is_teacher_signed': str(exam.state == 'Verified').lower(),
             'present_students_list': list(exam.items.values_list('student__id', flat=True))
         }
-        result = requests.post(settings.EXAM_LIST_URL, data=body).json()
-        return Response(result)
+        requests.post(settings.EXAM_LIST_URL, data=body)
+        return redirect('exam-detail', pk=exam.pk)

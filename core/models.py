@@ -39,7 +39,6 @@ class Course(models.Model):
 
 
 ExamStateChoice = [
-    ('exam_waited', 'Waiting for exam'),
     ('edu_waited', 'Waiting for Edu. Rep.'),
     ('prof_waited', 'Waiting for prof.'),
     ('verified', 'Verified')
@@ -52,6 +51,7 @@ class Exam(models.Model):
     course = models.OneToOneField('core.Course', on_delete=models.CASCADE)
     formation = models.OneToOneField('core.ClassFormation', on_delete=models.CASCADE)
     state = models.CharField(choices=ExamStateChoice, max_length=25, default=ExamStateChoice[0][0])
+    is_sent_to_shit = models.BooleanField(default=False)
 
     def verify_from_professor(self):
         if self.state != 'prof_waited':
