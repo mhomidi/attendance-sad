@@ -1,6 +1,18 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
-from rest_framework.compat import MinLengthValidator
+
+from core.fields import WeekDayField
+
+
+class TimeSlot(models.Model):
+    weekday = models.IntegerField()
+
+
+class ClassFormation(models.Model):
+    starts_at = models.TimeField()
+    ends_at = models.TimeField()
+    weekday = WeekDayField()
+    room_number = models.IntegerField()
 
 
 class User(AbstractBaseUser):
@@ -10,11 +22,11 @@ class User(AbstractBaseUser):
 class Student(models.Model):
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
-    student_number = models.CharField(max_length=9, validators=[MinLengthValidator(9)])
 
 
 class Professor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name = models.CharField(max_length=64)
+    last_name = models.CharField(max_length=64)
 
 
 class EducationalRepresentative(models.Model):
@@ -23,6 +35,7 @@ class EducationalRepresentative(models.Model):
 
 class Course(models.Model):
     name = models.CharField(max_length=128)
+    professor = models.ForeignKey('core.Professor', on_delete=models.CASCADE)
 
 
 ExamStateChoice = [
@@ -36,9 +49,8 @@ ExamStateChoice = [
 
 class Exam(models.Model):
     date = models.DateField()
-    start_at = models.TimeField()
-    end_at = models.TimeField()
-    room_number = models.IntegerField()
+    course = models.OneToOneField('core.Course', on_delete=models.CASCADE)
+    formation = models.OneToOneField('core.ClassFormation', on_delete=models.CASCADE)
     state = models.CharField(choices=ExamStateChoice, max_length=25, default=ExamStateChoice[0][0])
 
     def verify_from_professor(self):
@@ -66,6 +78,7 @@ ExamListItemChoices = [
 class ExamListItem(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='items')
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    chair_number = models.PositiveIntegerField()
     state = models.CharField(choices=ExamListItemChoices, max_length=32,
                              default=ExamListItemChoices[0][0])
 
