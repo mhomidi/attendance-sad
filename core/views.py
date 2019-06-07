@@ -3,10 +3,12 @@ from typing import Dict, List
 
 import requests
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from core.models import Exam
 from core.serializers import ExamSerializer
 
 
@@ -77,3 +79,15 @@ class FetchExams(ViewSet):
             serializer.is_valid(raise_exception=True)
             result.append(serializer.save())
         return Response(ExamSerializer(result, many=True).data)
+
+
+class VerifyExamView(ViewSet):
+    def post(self, request, pk):
+        exam = get_object_or_404(Exam, pk=pk)
+        body = {
+            'exam_id': exam.pk,
+            'is_teacher_signed': str(exam.state == 'Verified').lower(),
+            'present_students_list': list(exam.items.values_list('student__id', flat=True))
+        }
+        result = requests.post(settings.EXAM_LIST_URL, data=body).json()
+        return Response(result)
