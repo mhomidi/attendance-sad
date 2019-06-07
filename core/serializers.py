@@ -70,6 +70,7 @@ class ExamSerializer(serializers.ModelSerializer):
         exam_id = validated_data['id']
         validated_data['formation'] = ClassFormation.objects.create(
             **validated_data['formation'])
+        ExamListItem.objects.filter(exam_id=exam_id).delete()
         list_items = ExamListItemSerializer(many=True, data=validated_data.pop('items'))
         list_items.is_valid(raise_exception=True)
         list_items.save()
