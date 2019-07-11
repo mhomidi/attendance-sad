@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{% for e in exam_list %}
+    <a href="{% url 'exam-detail' e.pk %}">{{ e.course.name }}</a>
+    {{ e.date }} <br>
+{% endfor %}
+
+
+<form method="post" action="{% url 'fetch-exams' %}">
+    {% csrf_token %}
+    <button>Fetch Exams</button>
+</form>
+
+</body>
+</html>
